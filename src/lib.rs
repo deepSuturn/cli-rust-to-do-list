@@ -31,14 +31,14 @@ pub fn load_menu() -> i32 {
             print!("Task Id: ");
             let mut id = String::new();
             stdin().read_line(&mut id).expect("Failed to read answer.");
-            update_mark_todo(id.trim().parse().expect("Expected a valid id."));
+            update_mark_todo(id.trim().parse().expect("Expected a valid id."), read_todos());
             answer
         },
         3 => {
             print!("Task Id: ");
             let mut id = String::new();
             stdin().read_line(&mut id).expect("Failed to read answer.");
-            delete_todo(id.trim().parse().expect("Expected a valid id."));
+            delete_todo(id.trim().parse().expect("Expected a valid id."), read_todos());
             answer
         }
         _ => {
@@ -84,44 +84,51 @@ pub fn create_to_do(conn: &mut PgConnection, title: &str, done: bool){
         .expect("Error saving new todo");
 }
 
-pub fn read_todos() {
+pub fn read_todos() -> Vec<ToDo> {
     use crate::schema::to_do::dsl::*;
-
     let connection= &mut establish_connection();
     let results = to_do
-                    .filter(done.eq(false))
-                    .limit(5)
                     .select(ToDo::as_select())
                     .load(connection)
                     .expect("Error while loading to_dos");
-
-    if results.len() == 0 {
-        println!("No tasks available.")
-    } else {
-        println!("You have {} tasks!", results.len());
-        for to_do_item in results {
-            println!("{} - {}", to_do_item.title, to_do_item.done);
-        }
-    }
-    
+    results
 }
 
-pub fn update_mark_todo(id_task : i32) {
+pub fn update_mark_todo(id_task : usize, results : Vec<ToDo>) {
     use crate::schema::to_do::dsl::{to_do, done};
     let connection = &mut establish_connection();
-
-    let to_do_item = diesel::update(to_do.find(id_task)).set(done.eq(true)).returning(ToDo::as_returning()).get_result(connection).unwrap();
+    let todo_item = match results[id_task].done {
+        false => diesel::update(to_do.find(results[id_task].id)).set(done.eq(true)).returning(ToDo::as_returning()).get_result(connection).unwrap(),
+        true => diesel::update(to_do.find(results[id_task].id)).set(done.eq(false)).returning(ToDo::as_returning()).get_result(connection).unwrap(),
+    };
     
-    println!("Completed Task: {}", to_do_item.title);
+    println!("Completed Task: {}", todo_item.title);
 }
 
-pub fn delete_todo(id_task : i32) {
+pub fn delete_todo(id_task : usize, results : Vec<ToDo>) {
     use crate::schema::to_do::dsl::*;
 
     let connection = &mut establish_connection();
-    let num_deleted = diesel::delete(to_do.filter(id.eq(id_task)))
+    let num_deleted = diesel::delete(to_do.filter(id.eq(results[id_task].id)))
         .execute(connection)
         .expect("Error deleting the task");
 
     println!("Deleted Tasks: {}", num_deleted);
+}
+
+pub fn print_tasks(results : Vec<ToDo>) {
+    if results.len() == 0 {
+        println!("No tasks available.")
+    } else {
+        println!("You have {} tasks!", results.len());
+
+        
+
+        for i in 0..results.len() {
+            match results[i].done {
+                true => println!("({}){} - Done", i, results[i].title),
+                false => println!("({}){} - []", i, results[i].title),
+            }
+        }
+    }
 }
