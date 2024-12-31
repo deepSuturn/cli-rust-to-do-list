@@ -76,8 +76,8 @@ pub fn delete_task(position_list : usize, tasks : Vec<ToDo>) {
 
 pub fn print_tasks(tasks : Vec<ToDo>) {
     match tasks.len() {
-        0 => println!("No tasks available."),
-        _ =>{  println!("You have {} tasks!", tasks.len());
+        0 => println!("No tasks available!"),
+        _ =>{  println!("You have {} tasks:", tasks.len());
                 for i in 0..tasks.len() {
                     if tasks[i].done { println!("({}){} - Done", i, tasks[i].title) } else { println!("({}){} - []", i, tasks[i].title) };
                 }
@@ -95,12 +95,12 @@ pub fn create_title() -> String {
     let mut title = String::new();
     println!("What's the name of your task?");
     stdin().read_line(&mut title).unwrap();
-    title.trim_end().to_string()
+    title.trim().to_string()
 }
 
 pub fn ask_done() -> bool {
     println!("\nOk! Is the task done? [Y/N]",);
     let mut done = String::new();
     stdin().read_line(&mut done).unwrap();
-    if done.to_uppercase() == "Y" {true} else {false}
+    if done.trim().to_uppercase().as_str() == "Y" {true} else {false}
 }

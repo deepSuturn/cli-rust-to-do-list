@@ -6,4 +6,4 @@ file = "src/schema.rs"
 custom_type_derives = ["diesel::query_builder::QueryId", "Clone"]
 
 [migrations_directory]
-dir = "/home/suturn/Documentos/Projetos/cli-to-do-list/to-do-list/migrations"
+dir = "$MIGRATIONS_DIR"

@@ -1,6 +1,9 @@
 use to_do_list;
+mod env;
 
 fn main() {
+    env::load_variables();
+
     let mut sentinel = 0;
     while sentinel != -1 {
         to_do_list::print_tasks(to_do_list::read_tasks());
