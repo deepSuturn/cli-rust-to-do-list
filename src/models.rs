@@ -1,6 +1,7 @@
 use diesel::prelude::*;
 use crate::schema::to_do;
 
+#[derive(Clone)]
 #[derive(Queryable, Selectable)]
 #[diesel(table_name = to_do)]
 #[diesel(check_for_backend(diesel::pg::Pg))]

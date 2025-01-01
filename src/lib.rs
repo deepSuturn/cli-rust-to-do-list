@@ -14,7 +14,7 @@ pub fn establish_connection() -> PgConnection {
 }
 
 pub fn load_menu() -> isize {
-    println!("\n[1] - Create Task\n[2] - Mark Task\n[3] - Delete Task");
+    println!("\n[1] - Create Task\n[2] - Mark Task\n[3] - Delete Task\n[4] - Delete All");
     let menu_response = get_number_input();
     match menu_response {
         1 => {
@@ -22,11 +22,14 @@ pub fn load_menu() -> isize {
         },
         2 => {
             println!("Task Id: ");
-            update_status(get_number_input(), read_tasks());
+            update_status(get_number_input());
         },
         3 => {
             println!("Task Id: ");
-            delete_task(get_number_input(), read_tasks());
+            delete_task(get_number_input());
+        }
+        4 => {
+            delete_all();
         }
         _ => {
             println!("No answer available");
@@ -53,9 +56,11 @@ pub fn read_tasks() -> Vec<ToDo> {
     tasks
 }
 
-pub fn update_status(position_list : usize, tasks : Vec<ToDo>) {
+pub fn update_status(position_list : usize) {
     use crate::schema::to_do::dsl::{to_do, done};
     let connection = &mut establish_connection();
+
+    let tasks = read_tasks();
     let task = match tasks[position_list].done {
         false => diesel::update(to_do.find(tasks[position_list].id)).set(done.eq(true)).returning(ToDo::as_returning()).get_result(connection).unwrap(),
         true => diesel::update(to_do.find(tasks[position_list].id)).set(done.eq(false)).returning(ToDo::as_returning()).get_result(connection).unwrap(),
@@ -63,9 +68,11 @@ pub fn update_status(position_list : usize, tasks : Vec<ToDo>) {
     println!("Completed Task: {}", task.title);
 }
 
-pub fn delete_task(position_list : usize, tasks : Vec<ToDo>) {
+pub fn delete_task(position_list : usize) {
     use crate::schema::to_do::dsl::*;
     let connection = &mut establish_connection();
+
+    let tasks = read_tasks();
 
     let num_deleted = diesel::delete(to_do.filter(id.eq(tasks[position_list].id)))
         .execute(connection)
@@ -74,7 +81,17 @@ pub fn delete_task(position_list : usize, tasks : Vec<ToDo>) {
     println!("Deleted Tasks: {}", num_deleted);
 }
 
-pub fn print_tasks(tasks : Vec<ToDo>) {
+pub fn delete_all() {
+    use crate::schema::to_do::dsl::*;
+    let connection = &mut establish_connection();
+    let num_deleted = diesel::delete(to_do)
+        .execute(connection)
+        .expect("Error deleting all tasks");
+    println!("Deleted {} tasks", num_deleted);
+}
+
+pub fn print_tasks() {
+    let tasks = read_tasks();
     match tasks.len() {
         0 => println!("No tasks available!"),
         _ =>{  println!("You have {} tasks:", tasks.len());
@@ -104,3 +121,71 @@ pub fn ask_done() -> bool {
     stdin().read_line(&mut done).unwrap();
     if done.trim().to_uppercase().as_str() == "Y" {true} else {false}
 }
+
+
+#[cfg(test)]
+pub mod tests {
+    use crate::*;
+    
+    #[test]
+    fn test_establish_connection_success() {
+        dotenvy::from_filename(".env.test").ok(); // Load the test environment
+        let result = std::panic::catch_unwind(|| {
+            establish_connection() // Try to establish a connection
+        });
+
+        assert!(result.is_ok(), "Connection to the database failed");
+    }
+
+    
+
+    #[test]
+    fn test_create_task() {
+        delete_all();
+        let task = NewTodo { title: "Test Task", done: false };
+        create_task(task);
+
+        let tasks = read_tasks();
+        assert_eq!(tasks[tasks.len()-1].title, "Test Task");
+    }
+
+    #[test]
+    fn test_read_tasks() {
+        delete_all();
+        create_task(NewTodo { title: "Task 1", done: false });
+        create_task(NewTodo { title: "Task 2", done: true });
+
+        let tasks = read_tasks();
+        assert_eq!(tasks.len(), 2);
+        assert_eq!(tasks[0].title, "Task 1");
+        assert!(tasks[1].done);
+    }
+
+    #[test]
+    fn test_update_status() {
+        delete_all();
+        create_task(NewTodo { title: "Task to Update", done: false });
+
+        update_status(0);
+        let updated_tasks = read_tasks();
+        assert!(updated_tasks[0].done);
+
+        update_status(0);
+        let toggled_tasks = read_tasks();
+        assert!(!toggled_tasks[0].done);
+    }
+
+    #[test]
+    fn test_delete_task() {
+        delete_all();
+        create_task(NewTodo { title: "Task to Delete", done: false });
+        delete_task(0);
+        let remaining_tasks = read_tasks();
+        assert!(remaining_tasks.is_empty());
+    }
+
+    
+
+}
+
+
