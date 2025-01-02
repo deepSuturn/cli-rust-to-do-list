@@ -122,19 +122,19 @@ pub fn ask_done() -> bool {
     if done.trim().to_uppercase().as_str() == "Y" {true} else {false}
 }
 
-
+//WARNING: These tests need to be reviewed due to caching and the random order of tests.
 #[cfg(test)]
 pub mod tests {
     use crate::*;
     
     #[test]
     fn test_establish_connection_success() {
-        dotenvy::from_filename(".env.test").ok(); // Load the test environment
-        let result = std::panic::catch_unwind(|| {
-            establish_connection() // Try to establish a connection
+        dotenvy::from_filename(".env.test").ok();
+        let connection = std::panic::catch_unwind(|| {
+            establish_connection()
         });
 
-        assert!(result.is_ok(), "Connection to the database failed");
+        assert!(connection.is_ok(), "Connection to the database failed");
     }
 
     
@@ -142,11 +142,12 @@ pub mod tests {
     #[test]
     fn test_create_task() {
         delete_all();
-        let task = NewTodo { title: "Test Task", done: false };
-        create_task(task);
+        let mock_test = NewTodo { title: "Test Task", done: false };
+        create_task(mock_test);
 
         let tasks = read_tasks();
         assert_eq!(tasks[tasks.len()-1].title, "Test Task");
+        delete_all();
     }
 
     #[test]
@@ -159,6 +160,7 @@ pub mod tests {
         assert_eq!(tasks.len(), 2);
         assert_eq!(tasks[0].title, "Task 1");
         assert!(tasks[1].done);
+        delete_all();
     }
 
     #[test]
@@ -171,8 +173,9 @@ pub mod tests {
         assert!(updated_tasks[0].done);
 
         update_status(0);
-        let toggled_tasks = read_tasks();
-        assert!(!toggled_tasks[0].done);
+        let updated_tasks = read_tasks();
+        assert!(!updated_tasks[0].done);
+        delete_all();
     }
 
     #[test]
@@ -182,10 +185,9 @@ pub mod tests {
         delete_task(0);
         let remaining_tasks = read_tasks();
         assert!(remaining_tasks.is_empty());
+        delete_all();
     }
 
     
 
 }
-
-
