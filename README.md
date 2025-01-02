@@ -13,7 +13,7 @@ A simple command-line interface (CLI) to-do list application, built in Rust, des
 ## Technology Stack
 
 - **Language**: Rust
-- **Data Storage**: Local file-based storage (JSON or simple text file)
+- **Data Storage**: Postgres Database
 
 ## Getting Started
 
