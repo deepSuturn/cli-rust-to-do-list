@@ -1,7 +1,7 @@
 use diesel::prelude::*;
 use dotenvy::dotenv;
 use models::{NewTodo, ToDo};
-use std::{env::{self}, io::stdin};
+use std::env::{self};
 pub mod models;
 pub mod schema;
 
@@ -11,32 +11,6 @@ pub fn establish_connection() -> PgConnection {
     let database_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
     PgConnection::establish(&database_url)
         .unwrap_or_else(|_| panic!("Error connecting to {}", database_url))
-}
-
-pub fn load_menu() -> isize {
-    println!("\n[1] - Create Task\n[2] - Mark Task\n[3] - Delete Task\n[4] - Delete All");
-    let menu_response = get_number_input();
-    match menu_response {
-        1 => {
-            create_task(NewTodo { title : create_title().as_str(), done : ask_done(), });
-        },
-        2 => {
-            println!("Task Id: ");
-            update_status(get_number_input());
-        },
-        3 => {
-            println!("Task Id: ");
-            delete_task(get_number_input());
-        }
-        4 => {
-            delete_all();
-        }
-        _ => {
-            println!("No answer available");
-            return -1
-        }
-    }
-    0
 }
 
 pub fn create_task(task : NewTodo){
@@ -102,31 +76,11 @@ pub fn print_tasks() {
     }
 }
 
-pub fn get_number_input() -> usize {
-    let mut input = String::new();
-    stdin().read_line(&mut input).expect("Failed to read line");
-    input.trim().parse().expect("Expected a number") 
-}
-
-pub fn create_title() -> String {
-    let mut title = String::new();
-    println!("What's the name of your task?");
-    stdin().read_line(&mut title).unwrap();
-    title.trim().to_string()
-}
-
-pub fn ask_done() -> bool {
-    println!("\nOk! Is the task done? [Y/N]",);
-    let mut done = String::new();
-    stdin().read_line(&mut done).unwrap();
-    if done.trim().to_uppercase().as_str() == "Y" {true} else {false}
-}
-
 //WARNING: These tests need to be reviewed due to caching and the random order of tests.
 #[cfg(test)]
 pub mod tests {
     use crate::*;
-    
+
     #[test]
     fn test_establish_connection_success() {
         dotenvy::from_filename(".env.test").ok();
