@@ -31,4 +31,9 @@ To run this project, you need:
    ```bash
    git clone https://github.com/yourusername/cli-rust-to-do-list.git
    cd cli-rust-to-do-list
-   cargo run
+2. Execute the installer(Under development):
+   ```bash
+   ./install.sh
+3. Use the application as you may! Here is an example:
+   ```bash
+   to-do --help
