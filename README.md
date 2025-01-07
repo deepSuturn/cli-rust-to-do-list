@@ -14,6 +14,7 @@ A simple command-line interface (CLI) to-do list application, built in Rust, des
 
 - **Language**: Rust
 - **Data Storage**: Postgres Database
+- **Clap**: CLI Parser
 
 ## Getting Started
 
