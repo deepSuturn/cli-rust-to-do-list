@@ -6,11 +6,11 @@ mod env;
 #[derive(Parser, Debug)]
 #[command(version, about, long_about = None)]
 struct Args {
-    #[arg(short, long)]
-    task: Option<String>,
-    
     #[arg(short, long, default_value = "create")]
     command: String,
+
+    #[arg(short, long)]
+    task: Option<String>,    
     
     #[arg(short, long, default_value_t = 0)]
     position: usize,
@@ -27,11 +27,11 @@ fn main() {
         "show" => print_tasks(),
         "create" => match args.task {
             Some(task) => to_do_list::create_task(NewTodo { title: task.as_str(), done: args.complete }),
-            None => println!("Error: --task is required for the 'create' command."),
+            None => panic!("Error: --task is required for the 'create' command."),
         },
         "mark" => to_do_list::update_status(args.position),
-        "delete" => to_do_list::update_status(args.position),
+        "delete" => to_do_list::delete_task(args.position),
         "wipe_all" => delete_all(),
-        _ => println!("unknown command."),
+        _ => panic!("unknown command."),
     }
 }
