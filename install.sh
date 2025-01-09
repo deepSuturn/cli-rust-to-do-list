@@ -1,15 +1,24 @@
 #!/bin/bash
 
+
+
+
 # Define variables
 APP_NAME="to-do"
 TARGET_DIR="/usr/local/bin"
 BINARY_PATH="./$APP_NAME"
+
 
 # Check if the user has sudo privileges
 if [ "$EUID" -ne 0 ]; then
   echo "Please run this script as root or with sudo."
   exit 1
 fi
+
+cargo build --release
+
+cd ./target/release
+
 
 # Ensure the binary exists
 if [ ! -f "$BINARY_PATH" ]; then
