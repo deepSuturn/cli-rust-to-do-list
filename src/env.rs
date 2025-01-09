@@ -6,7 +6,7 @@ pub fn load_variables() {
 
     let migrations_dir = env::var("MIGRATIONS_DIR").expect("MIGRATIONS_DIR must be set");
 
-    let toml_content = fs::read_to_string("diesel.toml").expect("Failed to read config.toml");
+    let toml_content = fs::read_to_string("/home/suturn/Documentos/Projetos/cli-to-do-list/to-do-list/diesel.toml").expect("Failed to read config.toml");
 
     let _ = toml_content.replace("$MIGRATIONS_DIR", &migrations_dir);
 }

@@ -1,6 +1,5 @@
 use clap::Parser;
-use to_do_list::{self, delete_all, models::NewTodo, print_tasks};
-use std::fmt::Debug;
+use to_do::{delete_all, models::NewTodo, print_tasks};
 mod env;
 
 #[derive(Parser, Debug)]
@@ -26,11 +25,11 @@ fn main() {
     match args.command.as_str() {
         "show" => print_tasks(),
         "create" => match args.task {
-            Some(task) => to_do_list::create_task(NewTodo { title: task.as_str(), done: args.complete }),
+            Some(task) => to_do::create_task(NewTodo { title: task.as_str(), done: args.complete }),
             None => panic!("Error: --task is required for the 'create' command."),
         },
-        "mark" => to_do_list::update_status(args.position),
-        "delete" => to_do_list::delete_task(args.position),
+        "mark" => to_do::update_status(args.position),
+        "delete" => to_do::delete_task(args.position),
         "wipe_all" => delete_all(),
         _ => panic!("unknown command."),
     }

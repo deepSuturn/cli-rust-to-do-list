@@ -280,7 +280,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "to-do-list"
+name = "to-do"
 version = "0.1.0"
 dependencies = [
  "clap",
