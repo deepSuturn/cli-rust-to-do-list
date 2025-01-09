@@ -5,6 +5,7 @@ use crate::schema::to_do;
 #[derive(Queryable, Selectable)]
 #[diesel(table_name = to_do)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
+#[diesel(check_for_backend(diesel::sqlite::Sqlite))]
 pub struct ToDo {
     pub id: i32,
     pub title: String,
