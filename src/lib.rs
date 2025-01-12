@@ -7,10 +7,10 @@ pub mod schema;
 use crate::schema::to_do;
 use crate::schema::to_do::dsl::*;
 
-pub fn establish_connection() -> PgConnection {
-    dotenv().ok();
+pub fn establish_connection() -> SqliteConnection {
+    dotenv().ok(); // Load .env file
     let database_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
-    PgConnection::establish(&database_url)
+    SqliteConnection::establish(&database_url)
         .unwrap_or_else(|_| panic!("Error connecting to {}", database_url))
 }
 
@@ -30,9 +30,9 @@ pub fn create_task(task : NewTodo){
     let connection= &mut establish_connection();
     diesel::insert_into(to_do::table)
         .values(&task)
-        .returning(ToDo::as_returning())
-        .get_result(connection)
+        .execute(connection)
         .expect("Error saving new task");
+    print!("Task saved.")
 }
 
 pub fn read_tasks() -> Vec<ToDo> {
@@ -44,13 +44,12 @@ pub fn read_tasks() -> Vec<ToDo> {
 pub fn update_status(position_list : usize) {
     use crate::schema::to_do::dsl::{to_do, done};
     let connection = &mut establish_connection();
-
     let tasks = read_tasks();
-    let task = match tasks[position_list].done {
-        false => diesel::update(to_do.find(tasks[position_list].id)).set(done.eq(true)).returning(ToDo::as_returning()).get_result(connection).unwrap(),
-        true => diesel::update(to_do.find(tasks[position_list].id)).set(done.eq(false)).returning(ToDo::as_returning()).get_result(connection).unwrap(),
-    };
-    println!("Completed Task: {}", task.title);
+    diesel::update(to_do.find(tasks[position_list].id))
+        .set(done.eq(!tasks[position_list].done))
+        .execute(connection)
+        .expect("Error updating task status");
+    println!("Changing task status...");
 }
 
 pub fn delete_task(position_list : usize) {
@@ -71,7 +70,7 @@ pub fn delete_all() {
 }
 
 
-//WARNING: Execute this tests in serial order, not in paralel.
+
 #[cfg(test)]
 pub mod tests {
     use crate::*;
