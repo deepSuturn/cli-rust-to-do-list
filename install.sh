@@ -12,6 +12,34 @@ if [ "$EUID" -ne 0 ]; then
   exit 1
 fi
 
+# Function to check and install SQLite3
+install_sqlite3() {
+  if ! command -v sqlite3 >/dev/null 2>&1; then
+    echo "SQLite3 is not installed. Installing SQLite3..."
+    
+    # Check the package manager
+    if command -v apt >/dev/null 2>&1; then
+      sudo apt update
+      sudo apt install -y sqlite3
+    elif command -v yum >/dev/null 2>&1; then
+      sudo yum install -y sqlite3
+    elif command -v dnf >/dev/null 2>&1; then
+      sudo dnf install -y sqlite3
+    elif command -v pacman >/dev/null 2>&1; then
+      sudo pacman -S --noconfirm sqlite
+    else
+      echo "Package manager not supported."
+      exit 1
+    fi
+    
+    echo "SQLite3 installed successfully."
+  else
+    echo "SQLite3 is already installed."
+  fi
+}
+
+install_sqlite3
+
 # Build the application in release mode
 echo "Building $APP_NAME..."
 cargo build --release
@@ -46,8 +74,12 @@ fi
 chmod 644 "$SQLITE_DB_PATH"
 chown "$USER":"$USER" "$SQLITE_DB_PATH"
 
+# Run Diesel migrations
 echo "Running Diesel migrations..."
 diesel migration run --database-url=sqlite://$SQLITE_DB_PATH
+
+# Check and install SQLite3
+
 
 # Verify installation
 if command -v "$APP_NAME" >/dev/null 2>&1; then
