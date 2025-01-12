@@ -29,7 +29,7 @@ To run this project, you need:
 1. Clone the repository:
 
    ```bash
-   git clone https://github.com/yourusername/cli-rust-to-do-list.git
+   git clone https://github.com/deepSuturn/cli-rust-to-do-list.git
    cd cli-rust-to-do-list
 2. Execute the installer(Under development):
    ```bash
